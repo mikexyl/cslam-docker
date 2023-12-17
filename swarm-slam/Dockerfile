@@ -1,37 +1,8 @@
-FROM zenoh:foxy-cuda as zenoh-builder
 FROM cuda-ros-base:foxy
 
 RUN apt update && apt install -y --no-install-recommends \
     sudo git python3-vcstool wget \
     && rm -rf /var/lib/apt/lists/*
-
-# Set the DISPLAY environment variable
-ENV DISPLAY=host.docker.internal:0.0
-
-# Create a user
-ARG USERNAME=maes
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-# Cancel sudo password
-RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME
-
-# Create the user
-RUN groupadd --gid $USER_GID $USERNAME && \
-    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
-
-
-# # Add Miniconda to PATH
-# ENV PATH="/root/miniconda3/bin:${PATH}"
-
-# RUN wget \
-#     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-#     && mkdir /root/.conda \
-#     && bash Miniconda3-latest-Linux-x86_64.sh -b \
-#     && rm -f Miniconda3-latest-Linux-x86_64.sh 
-# RUN conda --version
-
 
 # Add PPA
 RUN add-apt-repository ppa:borglab/gtsam-release-4.1
@@ -39,22 +10,9 @@ RUN add-apt-repository ppa:borglab/gtsam-release-4.1
 RUN apt-get update && apt-get install -y --no-install-recommends libgtsam-dev libgtsam-unstable-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# # Update Conda
-# RUN /bin/bash -c "source /root/.bashrc" && \
-#     conda init bash && \
-#     conda update -n base -c defaults conda
-
 RUN apt update && apt install -y --no-install-recommends \
     python3-pip python3-dev python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /ros2_ws/src && \
-    cd /ros2_ws && \
-    wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
-    vcs import src < cslam.repos && \
-    wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/requirements.txt && \
-    sed -i '4d' requirements.txt && \
-    pip install -r requirements.txt # "The requirements file is in the main Swarm-SLAM repo.You don't need torch if you are only using lidar.c"
 
 RUN apt update && apt install python3-rosdep python3-colcon-common-extensions \
     python3-vcstool build-essential -y && \
@@ -98,7 +56,20 @@ RUN apt update && apt install -y --no-install-recommends \
     librealsense2-udev-rules && \
     rm -rf /var/lib/apt/lists/*
 
-RUN chown -R $USERNAME:$USERNAME /ros2_ws
+RUN mkdir -p /ros2_ws/src && \
+    cd /ros2_ws && \
+    wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
+    vcs import src < cslam.repos && \
+    wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/requirements.txt && \
+    sed -i '/open3d/d' requirements.txt && \
+    # upgrade pip3
+    pip3 install --upgrade pip && \
+    pip3 install -r requirements.txt # "The requirements file is in the main Swarm-SLAM repo.You don't need torch if you are only using lidar.c"
+
+RUN pip3 install open3d
+
 WORKDIR /ros2_ws/
+RUN source /opt/ros/foxy/setup.bash && \
+    colcon build 
 
 CMD [ "/usr/bin/bash" ]
