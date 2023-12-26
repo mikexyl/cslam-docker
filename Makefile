@@ -11,3 +11,14 @@ build-kimera-multi:
 	@docker build -t kimera-multi -f kimera-multi/Dockerfile \
 		--build-arg SSH_PRIVATE_KEY_BASE64="$(shell cat /home/mikexyl/.ssh/id_ed25519.base64)" \
 		.
+
+build-decoslam:
+	@docker build -t decoslam -f decoslam/Dockerfile .
+	
+run-kimera-multi:
+	@docker run -it --rm \
+		--name kimera-multi \
+		--cap-add=NET_ADMIN \
+		-u root \
+		--mount type=bind,source=$(HOME)/workspaces/datasets,target=/datasets \
+		kimera-multi bash

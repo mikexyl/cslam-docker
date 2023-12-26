@@ -86,3 +86,12 @@ RUN apt update && apt install -y ros-$ROS_DISTRO-depth-image-proc && \
     rm -rf /var/lib/apt/lists/*
 
 RUN catkin build --continue -s -j12  
+
+RUN apt update && apt install -y tmuxp tmux && \
+    rm -rf /var/lib/apt/lists/* 
+
+COPY kimera-multi/start.sh /start.sh
+
+COPY ros_entrypoint.sh /ros_entrypoint.sh
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+CMD [ "bash" ]
