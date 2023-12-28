@@ -4,7 +4,11 @@ build-swarm-slam:
 	@docker build -t swarm-slam -f swarm-slam/Dockerfile .
 
 build-d2slam:
-	@docker build -t d2slam -f d2slam/Dockerfile .
+	@cd d2slam/D2SLAM && git apply ../d2slam_dockerfile.patch
+	@docker build -t d2slam \
+		-f d2slam/D2SLAM/docker/Dockerfile\
+		--progress plain \
+		./d2slam/D2SLAM
 	
 build-kimera-multi:
 	@echo $(shell cat /home/mikexyl/.ssh/id_ed25519.base64)
@@ -20,5 +24,12 @@ run-kimera-multi:
 		--name kimera-multi \
 		--cap-add=NET_ADMIN \
 		-u root \
-		--mount type=bind,source=$(HOME)/workspaces/datasets,target=/datasets \
+		--mount type=bind,source=/datasets,target=/datasets \
 		kimera-multi bash
+	
+run-d2slam:
+	@docker run -it --rm \
+		--name d2slam \
+		--cap-add=NET_ADMIN \
+		-u root \
+		d2slam bash

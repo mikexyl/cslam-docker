@@ -1,0 +1,3 @@
+[submodule "d2slam/D2SLAM"]
+	path = d2slam/D2SLAM
+	url = git@github.com:HKUST-Aerial-Robotics/D2SLAM.git
