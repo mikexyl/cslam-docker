@@ -1,7 +1,9 @@
 .PHONY: build-swarm-slam build-kimera-multi build-decoslam build-d2slam
 
 build-swarm-slam:
-	@docker build -t swarm-slam -f swarm-slam/Dockerfile .
+	@docker build -t swarm-slam -f swarm-slam/Dockerfile\
+		--progress=plain \
+		.
 
 build-d2slam:
 	@cd d2slam/D2SLAM && git apply ../d2slam_dockerfile.patch
@@ -18,6 +20,9 @@ build-kimera-multi:
 
 build-decoslam:
 	@docker build -t decoslam -f decoslam/Dockerfile .
+
+build-ros-ros2-bridge:
+	@docker build -t ros-ros2-bridge -f tools/Dockerfile.ros-ros2-bridge .
 	
 run-kimera-multi:
 	@docker run -it --rm \
@@ -33,3 +38,10 @@ run-d2slam:
 		--cap-add=NET_ADMIN \
 		-u root \
 		d2slam bash
+	
+run-ros-ros2-bridge:
+	@docker run -it --rm \
+		--name ros-ros2-bridge \
+		-u root \
+		--mount type=bind,source=/home/mikexyl/workspaces/datasets,target=/datasets \
+		ros-ros2-bridge bash

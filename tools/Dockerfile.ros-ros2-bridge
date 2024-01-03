@@ -1,0 +1,6 @@
+FROM cuda-ros-base:foxy
+
+# install ros1_bridge
+RUN apt update && apt install -y \
+    ros-foxy-ros1-bridge \
+    && rm -rf /var/lib/apt/lists/*

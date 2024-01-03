@@ -1,7 +1,7 @@
 FROM cuda-ros-base:foxy
 
 RUN apt update && apt install -y --no-install-recommends \
-    sudo git python3-vcstool wget \
+    sudo git python3-vcstool wget software-properties-common\
     && rm -rf /var/lib/apt/lists/*
 
 # Add PPA
@@ -59,16 +59,15 @@ RUN apt update && apt install -y --no-install-recommends \
 RUN mkdir -p /ros2_ws/src && \
     cd /ros2_ws && \
     wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
-    vcs import src < cslam.repos && \
-    wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/requirements.txt && \
-    sed -i '/open3d/d' requirements.txt && \
-    # upgrade pip3
-    pip3 install --upgrade pip && \
-    pip3 install -r requirements.txt # "The requirements file is in the main Swarm-SLAM repo.You don't need torch if you are only using lidar.c"
+    vcs import src < cslam.repos
 
-RUN pip3 install open3d
+RUN pip3 install --upgrade pip && \
+    pip3 install open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
 
 WORKDIR /ros2_ws/
+
+# use bash
+SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/foxy/setup.bash && \
     colcon build 
 
