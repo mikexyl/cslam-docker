@@ -43,5 +43,15 @@ run-ros-ros2-bridge:
 	@docker run -it --rm \
 		--name ros-ros2-bridge \
 		-u root \
+		--gpus all \
 		--mount type=bind,source=/home/mikexyl/workspaces/datasets,target=/datasets \
+		--env ROS_DOMAIN_ID=99 \
 		ros-ros2-bridge bash
+
+IMAGE=swarm-slam
+test-realsense:
+	docker run -it --rm \
+    -v /dev:/dev \
+    --device-cgroup-rule "c 81:* rmw" \
+    --device-cgroup-rule "c 189:* rmw" \
+	$(IMAGE) rs-enumerate-devices --compact

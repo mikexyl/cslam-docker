@@ -1,4 +1,4 @@
-FROM cuda-ros-base:foxy
+FROM cuda-ros-base:iron
 
 RUN apt update && apt install -y --no-install-recommends \
     sudo git python3-vcstool wget software-properties-common\
@@ -19,7 +19,7 @@ RUN apt update && apt install python3-rosdep python3-colcon-common-extensions \
     rm -rf /var/lib/apt/lists/*
 
 RUN apt update && apt install -y --no-install-recommends \
-    ros-foxy-rtabmap-ros ros-foxy-perception-pcl && \ 
+    ros-${ROS_DISTRO}-rtabmap-ros ros-${ROS_DISTRO}-perception-pcl && \ 
     rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
@@ -40,35 +40,36 @@ RUN git clone https://github.com/eclipse-zenoh/zenoh-plugin-dds.git
 RUN cd zenoh-plugin-dds && \
     cargo install --locked --path zenoh-bridge-dds
 
-RUN mkdir -p /etc/apt/keyrings && \
-    curl -sSf https://librealsense.intel.com/Debian/librealsense.pgp | sudo tee /etc/apt/keyrings/librealsense.pgp > /dev/null && \
-    apt update && apt install -y --no-install-recommends \
-    apt-transport-https && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
-    tee /etc/apt/sources.list.d/librealsense.list && \
-    apt-get update && apt install -y --no-install-recommends \
-    librealsense2-dkms librealsense2-utils librealsense2-dev librealsense2-dbg && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN apt update && apt install -y --no-install-recommends \
-    librealsense2-udev-rules && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN mkdir -p /ros2_ws/src && \
     cd /ros2_ws && \
     wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
     vcs import src < cslam.repos
 
-RUN pip3 install --upgrade pip && \
-    pip3 install open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
+COPY swarm-slam/launch /ros2_ws/src/cslam_experiment/launch
+COPY swarm-slam/ros_log_str.patch /ros_log_str.patch
+
+# apply patch to cslam
+RUN cd /ros2_ws/src/cslam && \
+    git apply /ros_log_str.patch
 
 WORKDIR /ros2_ws/
 
 # use bash
 SHELL ["/bin/bash", "-c"]
-RUN source /opt/ros/foxy/setup.bash && \
-    colcon build 
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
+    colcon build
 
+RUN pip3 install --upgrade pip && \
+    pip3 install --ignore-installed blinker && \
+    pip3 install --user open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
+
+# install runtime dependencies
+RUN apt update && apt install -y --no-install-recommends \
+    ros-$ROS_DISTRO-compressed-image-transport ros-$ROS_DISTRO-compressed-depth-image-transport \ 
+    rm -rf /var/lib/apt/lists/*
+
+COPY swarm-slam/resnet18_64.pth /src/cslam/modules/
+
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 CMD [ "/usr/bin/bash" ]
