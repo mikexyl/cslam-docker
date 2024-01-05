@@ -45,12 +45,17 @@ RUN mkdir -p /ros2_ws/src && \
     wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
     vcs import src < cslam.repos
 
-COPY swarm-slam/launch /ros2_ws/src/cslam_experiment/launch
 COPY swarm-slam/ros_log_str.patch /ros_log_str.patch
+COPY swarm-slam/rclpy_param_types.patch /rclpy_param_types.patch
+
+RUN pip3 install --upgrade pip && \
+    pip3 install --ignore-installed blinker && \
+    pip3 install --user open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
 
 # apply patch to cslam
 RUN cd /ros2_ws/src/cslam && \
-    git apply /ros_log_str.patch
+    git apply /ros_log_str.patch && \
+    git apply /rclpy_param_types.patch
 
 WORKDIR /ros2_ws/
 
@@ -59,16 +64,26 @@ SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
     colcon build
 
-RUN pip3 install --upgrade pip && \
-    pip3 install --ignore-installed blinker && \
-    pip3 install --user open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
-
 # install runtime dependencies
 RUN apt update && apt install -y --no-install-recommends \
-    ros-$ROS_DISTRO-compressed-image-transport ros-$ROS_DISTRO-compressed-depth-image-transport \ 
+    ros-$ROS_DISTRO-compressed-image-transport ros-$ROS_DISTRO-compressed-depth-image-transport && \ 
     rm -rf /var/lib/apt/lists/*
 
-COPY swarm-slam/resnet18_64.pth /src/cslam/modules/
+# download pretrained models
+RUN mkdir -p /root/.cache/torch/hub/checkpoints/ && \
+    wget https://download.pytorch.org/models/resnet18-f37072fd.pth -q -O /root/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth && \
+    wget https://download.pytorch.org/models/resnet50-19c8e357.pth -q -O /root/.cache/torch/hub/checkpoints/resnet50-19c8e357.pth && \
+    wget https://download.pytorch.org/models/resnet101-5d3b4d8f.pth -q -O /root/.cache/torch/hub/checkpoints/resnet101-5d3b4d8f.pth && \
+    wget https://download.pytorch.org/models/resnet152-b121ed2d.pth -q -O /root/.cache/torch/hub/checkpoints/resnet152-b121ed2d.pth
+
+
+COPY swarm-slam/launch /ros2_ws/src/cslam_experiments/launch
+
+COPY swarm-slam/resnet18_64.pth /ros2_ws/src/cslam/models/
+
+# build again to install launch files
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
+    colcon build
 
 COPY ./ros_entrypoint.sh /
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
