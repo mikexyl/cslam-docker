@@ -21,9 +21,9 @@ from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
-    rate=float(LaunchConfiguration("rate").perform(context))
-    bag_start_delay=float(LaunchConfiguration("bag_start_delay").perform(context))
-    bag_start_delay/=rate
+    rate = float(LaunchConfiguration("rate").perform(context))
+    bag_start_delay = float(LaunchConfiguration("bag_start_delay").perform(context))
+    bag_start_delay /= rate
 
     return [
         Node(
@@ -61,6 +61,7 @@ def launch_setup(context, *args, **kwargs):
                         "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/color/image_raw/compressed:=" + LaunchConfiguration("namespace").perform(context)+"/color/image_raw/compressed",
                         "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/color/camera_info:=" + LaunchConfiguration("namespace").perform(context) + "/color/camera_info",
                         "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/depth/image_rect_raw:=" + LaunchConfiguration("namespace").perform(context) + "/aligned_depth_to_color/image_raw",
+                        "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/imu:=" + LaunchConfiguration("namespace").perform(context) + "/"+LaunchConfiguration("robot_name").perform(context) + "/forward/imu",
                         # fmt: on
                     ],
                     name="bag",
