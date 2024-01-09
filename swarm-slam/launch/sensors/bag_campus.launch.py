@@ -10,6 +10,7 @@ from launch.actions import (
     ExecuteProcess,
     TimerAction,
     OpaqueFunction,
+    IncludeLaunchDescription,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -26,6 +27,19 @@ def launch_setup(context, *args, **kwargs):
     bag_start_delay /= rate
 
     return [
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(
+                    get_package_share_directory("cslam_experiments"),
+                    "launch",
+                    "sensors",
+                    "campus_tf.launch.py",
+                )
+            ),
+            launch_arguments={
+                "base_link": LaunchConfiguration("namespace").perform(context) + "_link"
+            }.items(),
+        ),
         Node(
             package="image_transport",
             executable="republish",
