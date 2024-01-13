@@ -82,9 +82,12 @@ COPY swarm-slam/launch /ros2_ws/src/cslam_experiments/launch
 COPY swarm-slam/resnet18_64.pth /ros2_ws/src/cslam/models/
 
 COPY swarm-slam/cslam_vis_ros_parameter.patch /cslam_vis_ros_parameter.patch
+COPY swarm-slam/rclpy_param_types.patch /rclpy_param_types.patch
 
 RUN cd /ros2_ws/src/cslam_visualization && \
-    git apply /cslam_vis_ros_parameter.patch
+    git apply /cslam_vis_ros_parameter.patch && \
+    cd /ros2_ws/src/cslam && \
+    git apply /rclpy_param_types.patch
 
 # build again to install launch files
 RUN source /opt/ros/$ROS_DISTRO/setup.bash && \

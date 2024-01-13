@@ -40,25 +40,26 @@ def launch_setup(context, *args, **kwargs):
                 "base_link": LaunchConfiguration("namespace").perform(context) + "_link"
             }.items(),
         ),
+        PushLaunchConfigurations(),
         Node(
             package="image_transport",
             executable="republish",
-            name="image_republisher",
-            arguments=["compressed", "raw"],
-            remappings=[
-                (
-                    "in/compressed",
-                    LaunchConfiguration("namespace").perform(context)
-                    + "/color/image_raw/compressed",
-                ),
-                (
-                    "out",
-                    LaunchConfiguration("namespace").perform(context)
-                    + "/color/image_raw",
-                ),
+            name="republish",
+            arguments=[
+                "compressed",
+                "raw",
+                "--ros-args",
+                "-r",
+                "in/compressed:="
+                + LaunchConfiguration("namespace").perform(context)
+                + "/color/image_raw/compressed",
+                "-r",
+                "out:="
+                + LaunchConfiguration("namespace").perform(context)
+                + "/color/image_raw",
             ],
-            output="screen",
         ),
+        PopLaunchConfigurations(),
         TimerAction(
             period=bag_start_delay,
             actions=[
