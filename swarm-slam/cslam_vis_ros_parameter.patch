@@ -1,0 +1,13 @@
+diff --git a/cslam_visualization/visualization_node.py b/cslam_visualization/visualization_node.py
+index 8802c4a..a7d4df3 100755
+--- a/cslam_visualization/visualization_node.py
++++ b/cslam_visualization/visualization_node.py
+@@ -19,7 +19,7 @@ if __name__ == '__main__':
+                         ('enable_pointclouds_visualization', False),
+                         ('produce_mesh', False),
+                         ('voxel_size', 0.5),
+-                        ('rotation_to_sensor_frame', None),
++                        ('rotation_to_sensor_frame', rclpy.Parameter.Type.DOUBLE_ARRAY),
+                         ('pose_graph_markers_size', 0.1)])
+     params = {}
+     params['nb_colors'] = node.get_parameter(

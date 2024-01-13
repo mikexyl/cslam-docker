@@ -45,17 +45,14 @@ RUN mkdir -p /ros2_ws/src && \
     wget https://raw.githubusercontent.com/MISTLab/Swarm-SLAM/main/cslam.repos && \
     vcs import src < cslam.repos
 
-COPY swarm-slam/ros_log_str.patch /ros_log_str.patch
-COPY swarm-slam/rclpy_param_types.patch /rclpy_param_types.patch
-
 RUN pip3 install --upgrade pip && \
     pip3 install --ignore-installed blinker && \
     pip3 install --user open3d networkx numba numpy Pillow scikit_learn scipy sortedcontainers torch torchvision distinctipy numpy-quaternion
 
 # apply patch to cslam
-RUN cd /ros2_ws/src/cslam && \
-    git apply /ros_log_str.patch && \
-    git apply /rclpy_param_types.patch
+# RUN cd /ros2_ws/src/cslam
+    # git apply /ros_log_str.patch && \
+    # git apply /rclpy_param_types.patch
 
 WORKDIR /ros2_ws/
 
@@ -76,10 +73,18 @@ RUN mkdir -p /root/.cache/torch/hub/checkpoints/ && \
     wget https://download.pytorch.org/models/resnet101-5d3b4d8f.pth -q -O /root/.cache/torch/hub/checkpoints/resnet101-5d3b4d8f.pth && \
     wget https://download.pytorch.org/models/resnet152-b121ed2d.pth -q -O /root/.cache/torch/hub/checkpoints/resnet152-b121ed2d.pth
 
+RUN git clone https://github.com/lajoiepy/cslam_visualization.git src/cslam_visualization \
+    && source /opt/ros/$ROS_DISTRO/setup.bash \
+    && colcon build --packages-select cslam_visualization
 
 COPY swarm-slam/launch /ros2_ws/src/cslam_experiments/launch
 
 COPY swarm-slam/resnet18_64.pth /ros2_ws/src/cslam/models/
+
+COPY swarm-slam/cslam_vis_ros_parameter.patch /cslam_vis_ros_parameter.patch
+
+RUN cd /ros2_ws/src/cslam_visualization && \
+    git apply /cslam_vis_ros_parameter.patch
 
 # build again to install launch files
 RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
