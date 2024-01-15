@@ -135,5 +135,30 @@ def generate_launch_description():
                     "acl_jackal2/forward_color_optical_frame",
                 ],
             ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                name="camera_link_to_imu",
+                arguments=[
+                    "--x",
+                    "0.0",
+                    "--y",
+                    "0.0",
+                    "--z",
+                    "0.0",
+                    "--qx",
+                    "-0.5",
+                    "--qy",
+                    "0.5",
+                    "--qz",
+                    "-0.5",
+                    "--qw",
+                    "0.5",
+                    "--frame-id",
+                    LaunchConfiguration("base_link"),
+                    "--child-frame-id",
+                    "acl_jackal2/forward_imu_optical_frame"
+                ],
+            ),
         ]
     )

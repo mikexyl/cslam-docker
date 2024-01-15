@@ -44,7 +44,7 @@ def launch_setup(context, *args, **kwargs):
     odom_proc = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('cslam_experiments'), 'launch',
-                            'odometry', 'rtabmap_rgbd_odometry.launch.py')),
+                            'odometry', 'rtabmap_d455i_odometry.launch.py')),
         launch_arguments={
             "namespace": "/r" + LaunchConfiguration('robot_id').perform(context),
             "robot_id": LaunchConfiguration('robot_id').perform(context),
