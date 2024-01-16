@@ -138,7 +138,61 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                name="camera_link_to_imu",
+                name="gyro_optical_frame_to_imu_optical_frame",
+                arguments=[
+                    "--x",
+                    "0.0",
+                    "--y",
+                    "0.0",
+                    "--z",
+                    "0.0",
+                    "--qx",
+                    "0.0",
+                    "--qy",
+                    "0.0",
+                    "--qz",
+                    "0.0",
+                    "--qw",
+                    "1.0",
+                    "--frame-id",
+                    "acl_jackal2/forward_gyro_optical_frame",
+                    "--child-frame-id",
+                    "acl_jackal2/forward_imu_optical_frame"
+                ],
+            ),
+
+            # camera_link to camera_gyro_frame
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                name="camera_link_to_camera_gyro_frame",
+                arguments=[
+                    "--x",
+                    "-0.016",
+                    "--y",
+                    "-0.030",
+                    "--z",
+                    "0.007",
+                    "--qx",
+                    "0.0",
+                    "--qy",
+                    "0.0",
+                    "--qz",
+                    "0.0",
+                    "--qw",
+                    "1.0",
+                    "--frame-id",
+                    LaunchConfiguration("base_link"),
+                    "--child-frame-id",
+                    "acl_jackal2/forward_gyro_frame",
+                ],
+            ),
+
+            # camera_gyro_frame to camera_gyro_optical_frame
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                name="camera_gyro_frame_to_camera_gyro_optical_frame",
                 arguments=[
                     "--x",
                     "0.0",
@@ -155,9 +209,9 @@ def generate_launch_description():
                     "--qw",
                     "0.5",
                     "--frame-id",
-                    LaunchConfiguration("base_link"),
+                    "acl_jackal2/forward_gyro_frame",
                     "--child-frame-id",
-                    "acl_jackal2/forward_imu_optical_frame"
+                    "acl_jackal2/forward_gyro_optical_frame",
                 ],
             ),
         ]
