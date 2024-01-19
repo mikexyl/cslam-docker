@@ -10,7 +10,7 @@ from launch.actions import (
     ExecuteProcess,
     TimerAction,
     OpaqueFunction,
-    IncludeLaunchDescription
+    IncludeLaunchDescription,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -22,9 +22,9 @@ from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
-    rate=float(LaunchConfiguration("rate").perform(context))
-    bag_start_delay=float(LaunchConfiguration("bag_start_delay").perform(context))
-    bag_start_delay/=rate
+    rate = float(LaunchConfiguration("rate").perform(context))
+    bag_start_delay = float(LaunchConfiguration("bag_start_delay").perform(context))
+    bag_start_delay /= rate
 
     return [
         IncludeLaunchDescription(
@@ -77,6 +77,10 @@ def launch_setup(context, *args, **kwargs):
                         "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/color/camera_info:=" + LaunchConfiguration("namespace").perform(context) + "/color/camera_info",
                         "/"+LaunchConfiguration("robot_name").perform(context)+"/forward/depth/image_rect_raw:=" + LaunchConfiguration("namespace").perform(context) + "/aligned_depth_to_color/image_raw",
                         # fmt: on
+                        "--start-offset",
+                        LaunchConfiguration("start").perform(context),
+                        "--playback-duration",
+                        LaunchConfiguration("duration").perform(context),
                     ],
                     name="bag",
                     output="screen",
@@ -97,6 +101,12 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "robot_name", default_value="sparkal1", description=""
+            ),
+            DeclareLaunchArgument(
+                "start", default_value="0.0", description="start from these seconds"
+            ),
+            DeclareLaunchArgument(
+                "duration", default_value="2000.0", description="duration in seconds"
             ),
             OpaqueFunction(function=launch_setup),
         ]

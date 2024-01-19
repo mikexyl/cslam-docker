@@ -43,12 +43,17 @@ def launch_setup(context, *args, **kwargs):
     # Odom
     odom_proc = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory('cslam_experiments'), 'launch',
-                            'odometry', 'rtabmap_d455i_odometry.launch.py')),
+            os.path.join(
+                get_package_share_directory("cslam_experiments"),
+                "launch",
+                "odometry",
+                "rtabmap_d455i_odometry.launch.py",
+            )
+        ),
         launch_arguments={
-            "namespace": "/r" + LaunchConfiguration('robot_id').perform(context),
-            "robot_id": LaunchConfiguration('robot_id').perform(context),
-            'log_level': "error",
+            "namespace": "/r" + LaunchConfiguration("robot_id").perform(context),
+            "robot_id": LaunchConfiguration("robot_id").perform(context),
+            "log_level": "error",
         }.items(),
     )
 
@@ -66,6 +71,8 @@ def launch_setup(context, *args, **kwargs):
             "bag_file": LaunchConfiguration("bag_file").perform(context),
             "rate": LaunchConfiguration("rate").perform(context),
             "robot_name": LaunchConfiguration("robot_name").perform(context),
+            "start": LaunchConfiguration("start").perform(context),
+            "duration": LaunchConfiguration("duration").perform(context),
         }.items(),
     )
 
@@ -102,11 +109,15 @@ def generate_launch_description():
                 ),
                 description="",
             ),
-            DeclareLaunchArgument(
-                "rate", default_value="1.0", description="Bag rate"
-            ),
+            DeclareLaunchArgument("rate", default_value="1.0", description="Bag rate"),
             DeclareLaunchArgument(
                 "robot_name", default_value="sparkal1", description=""
+            ),
+            DeclareLaunchArgument(
+                "start", default_value="0.0", description="Bag start time"
+            ),
+            DeclareLaunchArgument(
+                "duration", default_value="0.0", description="Bag duration"
             ),
             OpaqueFunction(function=launch_setup),
         ]
